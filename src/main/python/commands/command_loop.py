@@ -6,6 +6,10 @@ import logging
 logger = logging.getLogger(__name__)
 
 def command_loop(client: Client):
+    '''
+    Function: command_loop()
+    Description: Driving command loop for the TUI. User input is split so the command and it's arguments are different objects.
+    '''
     while True:
         request = input('>>').split()
         command = request[0]

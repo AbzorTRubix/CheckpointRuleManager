@@ -7,6 +7,10 @@ import logging
 logger = logging.getLogger(__name__)
 
 def add_rule(client: Client,args: list):
+    '''
+    Function: add_rule()
+    Description: adds a rule to rulebase either by manual input, or through cached .json file.
+    '''
     if '?' in args:
         print('add-rule NAME SOURCE DESTINATION SERVICES ACTION POSITION LAYER')
         return
@@ -41,6 +45,10 @@ def add_rule(client: Client,args: list):
     logger.info(f' - added rule {args[NAME]} at position {args[POSITION]}')
 
 def review_no_hit(client: Client, rulebase: list[str]):
+    '''
+    Function: review_not_hit()
+    Description: Queries the rulebase for rules with hit counts less than 10 and gives user decision in disabling of the rule.
+    '''
     if rulebase!= None and len(rulebase) != 1:
         raise CommandException(f'expected one rulebase, got {len(rulebase)}')
     result = client.api_call('show-access-rulebase',{'name':rulebase[0],'show-hits':True}).response()['data']['rulebase']
@@ -51,6 +59,11 @@ def review_no_hit(client: Client, rulebase: list[str]):
                 disable_rule(client,[rule['name'],rulebase[0]])
 
 def review_disabled(client: Client, rulebase: list[str]):
+    '''
+    Function: Queries the rulebase for rules that are currently disabled, and gives user decision in deleting the rule. 
+    If deleted, a .json object containing the original object is created.
+    Description: 
+    '''
     if rulebase!= None and len(rulebase) != 1:
         raise CommandException(f'expected one rulebase, got {len(rulebase)}')
     result = client.api_call('show-access-rulebase',{'name':rulebase[0],'filter':'disabled'}).response()['data']['rulebase']
@@ -59,7 +72,11 @@ def review_disabled(client: Client, rulebase: list[str]):
         if decision == 'y':
             delete_rule(client,[rule['name'],rulebase[0]])
 
-def get_rule(client: Client, rules: list[str]):
+def get_rule(client: Client, rules: list[str]) -> tuple[dict,str]:
+    '''
+    Function: get_rule()
+    Description: obtains a rule object from the rulebase.
+    '''
     if len(rules) != 2:
         raise CommandException(f'expected two arguments, got {len(rules)}')
     rule, layer = rules
@@ -70,7 +87,11 @@ def get_rule(client: Client, rules: list[str]):
     rule = client.api_call('show-access-rule',payload).response()['data']
     return rule, layer
 
-def backup_rule(data):
+def backup_rule(data: dict):
+    '''
+    Function: backup_rule()
+    Description: Backs up a rule object as a .json file
+    '''
     fields = [
         "layer", "position", "name", "action", "action-settings", "content", 
         "content-direction", "content-negate", "custom-fields", "destination", 
@@ -107,12 +128,20 @@ def backup_rule(data):
         f.write(mapping)
 
 def clear_backups(client: Client, args: list[str]):
+    '''
+    Function: clear_backups()
+    Description: clears out the cached deleted rules.
+    '''
     if os.path.exists('deleted_rules') and os.path.isdir('deleted_rules'):
         shutil.rmtree('deleted_rules')
     else:
         return
 
 def delete_rule(client: Client, args: list[str]):
+    '''
+    Function: delete_rule()
+    Description: Deletes a rule from the rulebase after client decision, requests a back up be made if deleted.
+    '''
     rules = parse_command_args(args)
     if '?' in rules:
         print('delete-rule [NAME | NUMBER] LAYER')
@@ -126,6 +155,10 @@ def delete_rule(client: Client, args: list[str]):
     pass
 
 def enable_rule(client: Client, args: list[str]):
+    '''
+    Function: enable_rule()
+    Description: Enables a rule in the rulebase.
+    '''
     rules = parse_command_args(args)
     if '?' in rules:
         print('enable-rule [NAME | NUMBER] LAYER')
@@ -138,6 +171,10 @@ def enable_rule(client: Client, args: list[str]):
         logger.info(f' - enabled rule {rule['name']}')
         
 def disable_rule(client: Client,args: list[str]):
+    '''
+    Function: disable_rule()
+    Description: Disables a rule in the rulebase.
+    '''
     rules = parse_command_args(args)
     if '?' in rules:
         print('disable-rule [NAME | NUMBER] LAYER')
