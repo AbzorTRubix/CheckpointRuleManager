@@ -25,33 +25,37 @@ def parse_text_file(filename):
 
 def parse_command_args(args):
     result = []
-    i = 0
-    while i < len(args):
-        item = args[i]
-        if item.isdigit():
-            item = int(item)
-        if isinstance(item, str) and ',' in item:
-            parts = [part.strip() for part in item.split(',')]
-            result.append(parts)
-            i += 1
-        elif isinstance(item, str) and item.startswith('"') and not item.endswith('"'):
-            quoted_parts = [item.strip('"')]
-            i += 1
-            while i < len(args):
-                next_item = args[i]
-                quoted_parts.append(next_item.strip('"'))
-                if isinstance(next_item, str) and next_item.endswith('"'):
-                    break
-                i += 1
-            result.append(' '.join(quoted_parts))
-            i += 1
+    current_str = ''
+    current_arg = []
+    in_quote = False
+    for char in args:
+        if not in_quote:
+            if char == '"':
+                in_quote = True
+            elif char == ',':
+                current_arg.append(current_str)
+                current_str = ''
+            elif char.isspace():
+                if len(current_str) != 0:
+                    current_arg.append(current_str)
+                if len(current_arg) == 1:
+                    result.append(current_arg[0])
+                elif len(current_arg) != 0:
+                    result.append(current_arg)
+                current_arg = []
+                current_str = ''
+            else:
+                current_str = current_str + char
         else:
-            result.append(item)
-            i += 1
+            if char == '"':
+                in_quote = False
+            else:
+                current_str = current_str + char
+    if len(current_str) != 0:
+        result.append(current_str)
     return result
 
 def parse_command_add_rule(args):
-    args = parse_command_args(args)
     if len(args) == 1 and '.json' in args[0]:
         return args[0]
     if len(args) != ADD_RULE_COUNT:

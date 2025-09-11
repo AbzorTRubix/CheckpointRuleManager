@@ -80,9 +80,9 @@ def get_rule(client: Client, rules: list[str]) -> tuple[dict,str]:
     if len(rules) != 2:
         raise CommandException(f'expected two arguments, got {len(rules)}')
     rule, layer = rules
-    if not isinstance(rule,str) and not isinstance(rule,int):
+    if not isinstance(rule,str):
         raise ValueError(f'expected a string or number')
-    identifier = 'rule-number' if isinstance(rule,int) else 'name'
+    identifier = 'rule-number' if rule.isdigit() else 'name'
     payload = {identifier: rule,'layer': layer}
     rule = client.api_call('show-access-rule',payload).response()['data']
     return rule, layer
@@ -142,11 +142,10 @@ def delete_rule(client: Client, args: list[str]):
     Function: delete_rule()
     Description: Deletes a rule from the rulebase after client decision, requests a back up be made if deleted.
     '''
-    rules = parse_command_args(args)
-    if '?' in rules:
+    if '?' in args:
         print('delete-rule [NAME | NUMBER] LAYER')
         return
-    rule, layer = get_rule(client,rules)
+    rule, layer = get_rule(client,args)
     backup_rule(rule)
     decision = input(f'You chose to delete rule {rule['name']}\nConfirm(y/n)>>').lower()
     if decision == 'y':
@@ -159,11 +158,10 @@ def enable_rule(client: Client, args: list[str]):
     Function: enable_rule()
     Description: Enables a rule in the rulebase.
     '''
-    rules = parse_command_args(args)
-    if '?' in rules:
+    if '?' in args:
         print('enable-rule [NAME | NUMBER] LAYER')
         return
-    rule, layer = get_rule(client,rules)
+    rule, layer = get_rule(client,args)
     decision = input(f'You chose to enable rule {rule['name']}\nConfirm(y/n)>>').lower()
     if decision == 'y':
         new_name = rule['name'][(rule['name'].find(' - ') + 3):]
@@ -175,11 +173,10 @@ def disable_rule(client: Client,args: list[str]):
     Function: disable_rule()
     Description: Disables a rule in the rulebase.
     '''
-    rules = parse_command_args(args)
-    if '?' in rules:
+    if '?' in args:
         print('disable-rule [NAME | NUMBER] LAYER')
         return
-    rule, layer = get_rule(client,rules)
+    rule, layer = get_rule(client,args)
     decision = input(f'You chose to disable rule {rule['name']}\nConfirm(y/n)>>').lower()
     if decision == 'y':
         new_name = f'Disabled by {client.username} on {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")} - {rule['name']}'
