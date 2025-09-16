@@ -55,7 +55,7 @@ def parse_command_args(args):
         result.append(current_str)
     return result
 
-def parse_command_add_rule(args):
+def parse_command_add_rule(args: list[str]):
     if len(args) == 1 and '.json' in args[0]:
         return args[0]
     if len(args) != ADD_RULE_COUNT:
@@ -67,7 +67,7 @@ def parse_command_add_rule(args):
             raise ValueError('rule source, destination, and services must be a string or list of strings')
     if args[ACTION] not in RULE_ACTIONS:
         raise ValueError(f'action must be one of the following: {RULE_ACTIONS}')
-    if args[POSITION] != 'top' and args[5] != 'bottom' and not isinstance(args[5],int):
+    if args[POSITION] != 'top' and args[POSITION] != 'bottom' and not args[POSITION].isdigit():
         raise ValueError(f'rule position must be the top, bottom, or a specific rule number position')
     return args
 
