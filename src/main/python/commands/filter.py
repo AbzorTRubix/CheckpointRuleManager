@@ -35,8 +35,9 @@ def filter_low_activity(client: Client,args: list):
     unfiltered_rules = get_rulebase(client,args[0],N)
     print('Rule Number:\t\tRule Name:')
     for rule in filtered_rules:
-        if rule['hits']['value'] < 100:
-            rule_num = find_rule_num(unfiltered_rules,rule) + 1
-            print(rule_num,'\t\t\t',rule['name'])
+        if 'hits' in rule.keys(): 
+            if rule['hits']['value'] < 100:
+                rule_num = find_rule_num(unfiltered_rules,rule) + 1
+                print(rule_num,'\t\t\t',rule['name'])
 
             
