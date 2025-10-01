@@ -3,6 +3,7 @@ from .parser import *
 from .errors import *
 import json,uuid,os,shutil,datetime
 import logging
+from .filter import *
 
 logger = logging.getLogger(__name__)
 
@@ -44,33 +45,37 @@ def add_rule(client: Client,args: list):
     _ = client.api_call('add-access-rule',payload)
     logger.info(f' - added rule {args[NAME]} at position {args[POSITION]}')
 
-def review_no_hit(client: Client, rulebase: list[str]):
+def review_no_hit(client: Client, args: list[str]):
     '''
     Function: review_not_hit()
     Description: Queries the rulebase for rules with hit counts less than 10 and gives user decision in disabling of the rule.
     '''
-    if rulebase!= None and len(rulebase) != 1:
-        raise CommandException(f'expected one rulebase, got {len(rulebase)}')
-    result = client.api_call('show-access-rulebase',{'name':rulebase[0],'show-hits':True}).response()['data']['rulebase']
+    if args!= None and len(args) != 1:
+        raise CommandException(f'expected one rulebase, got {len(args)}')
+    num = client.api_call('show-access-rulebase',{'name':args[0],'show-hits':True,'limit':1}).response()['data']['total']
+    result = get_rulebase(client,args[0],num)
     for rule in result:
-        if rule['hits']['value'] < 10:
-            decision = input(f'The following rule:\n{rule['name']}\nhas the following hit count: {rule['hits']['value']}\nDisable?(y/n): ')
-            if decision == 'y':
-                disable_rule(client,[rule['name'],rulebase[0]])
+        if 'hits' in rule:
+            if rule['hits']['value'] < 10:
+                decision = input(f'The following rule:\n{rule['name']}\nhas the following hit count: {rule['hits']['value']}\nDisable?(y/n): ')
+                if decision == 'y':
+                    disable_rule(client,[rule['name'],args[0]])
 
-def review_disabled(client: Client, rulebase: list[str]):
+def review_disabled(client: Client, args: list[str]):
     '''
     Function: Queries the rulebase for rules that are currently disabled, and gives user decision in deleting the rule. 
     If deleted, a .json object containing the original object is created.
     Description: 
     '''
-    if rulebase!= None and len(rulebase) != 1:
-        raise CommandException(f'expected one rulebase, got {len(rulebase)}')
-    result = client.api_call('show-access-rulebase',{'name':rulebase[0],'filter':'disabled'}).response()['data']['rulebase']
+    if args!= None and len(args) != 1:
+        raise CommandException(f'expected one rulebase, got {len(args)}')
+    num = client.api_call('show-access-rulebase',{'name':args[0],'show-hits':True,'limit':1}).response()['data']['total']
+    result = get_rulebase(client,args[0],num)
     for rule in result:
-        decision = input(f'The following rule is disabled:\n{rule['name']}\nComments:{rule['comments']}\nDelete?(y/n): ')
-        if decision == 'y':
-            delete_rule(client,[rule['name'],rulebase[0]])
+        if 'enabled' in rule and rule['enabled'] == False:
+            decision = input(f'The following rule is disabled:\n{rule['name']}\nComments:{rule['comments']}\nDelete?(y/n): ')
+            if decision == 'y':
+                delete_rule(client,[rule['name'],args[0]])
 
 def get_rule(client: Client, rules: list[str]) -> tuple[dict,str]:
     '''

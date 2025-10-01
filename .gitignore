@@ -210,3 +210,4 @@ __marimo__/
 src/main/python/logs
 src/main/python/deleted_rules
 src/main/python/fingerprints.txt
+src/main/python/filtered_list.xlsx

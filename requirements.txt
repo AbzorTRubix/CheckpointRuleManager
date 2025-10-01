@@ -1,1 +1,2 @@
 cp-mgmt-api-sdk
+openpyxl
