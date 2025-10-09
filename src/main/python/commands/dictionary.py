@@ -1,5 +1,6 @@
 from .access_nat import *
 from .filter import *
+from .cluster import *
 
 commands = {
     'add-rule': add_rule,
@@ -9,5 +10,7 @@ commands = {
     'clear-backups':clear_backups,
     'cleanup-rulebase':review_no_hit,
     'cleanup-disabled-rules':review_disabled,
-    'filter-activity':filter_low_activity
+    'filter-activity':filter_low_activity,
+    'filter-target':filter_target,
+    'get-interfaces': get_interfaces
 }

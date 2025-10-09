@@ -1,6 +1,7 @@
 import json
 import cpapi
 import logging
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -15,6 +16,7 @@ class Client:
         self.username = None
         self.client_args = cpapi.APIClientArgs(server=self.server)
         self.client = cpapi.APIClient(self.client_args)
+        self.login_timestamp = None
 
     def login(self,username: str,password: str) -> None:
         '''
@@ -27,6 +29,7 @@ class Client:
             raise Exception(f"Login failed: {login_res.error_message}")
         self.sid = login_res.data.get("sid")
         logger.info(f'Successful login for {self.username} - sid is {self.sid}')
+        self.login_timestamp = datetime.now().strftime("%m-%d-%Y-%H-%M-%S")
 
     def api_call(self, command: str, params: dict = None):
         '''
